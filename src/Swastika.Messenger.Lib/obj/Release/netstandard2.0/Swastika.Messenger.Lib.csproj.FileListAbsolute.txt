@@ -1,0 +1,9 @@
+D:\Workspace\GitHub\Swastika-IO-Core\src\Swastika.Messenger.Lib\bin\Release\netstandard2.0\Swastika.Messenger.Lib.deps.json
+D:\Workspace\GitHub\Swastika-IO-Core\src\Swastika.Messenger.Lib\bin\Release\netstandard2.0\Swastika.Messenger.Lib.dll
+D:\Workspace\GitHub\Swastika-IO-Core\src\Swastika.Messenger.Lib\bin\Release\netstandard2.0\Swastika.Messenger.Lib.pdb
+D:\Workspace\GitHub\Swastika-IO-Core\src\Swastika.Messenger.Lib\obj\Release\netstandard2.0\Swastika.Messenger.Lib.csprojResolveAssemblyReference.cache
+D:\Workspace\GitHub\Swastika-IO-Core\src\Swastika.Messenger.Lib\obj\Release\netstandard2.0\Swastika.Messenger.Lib.csproj.CoreCompileInputs.cache
+D:\Workspace\GitHub\Swastika-IO-Core\src\Swastika.Messenger.Lib\obj\Release\netstandard2.0\Swastika.Messenger.Lib.AssemblyInfoInputs.cache
+D:\Workspace\GitHub\Swastika-IO-Core\src\Swastika.Messenger.Lib\obj\Release\netstandard2.0\Swastika.Messenger.Lib.AssemblyInfo.cs
+D:\Workspace\GitHub\Swastika-IO-Core\src\Swastika.Messenger.Lib\obj\Release\netstandard2.0\Swastika.Messenger.Lib.dll
+D:\Workspace\GitHub\Swastika-IO-Core\src\Swastika.Messenger.Lib\obj\Release\netstandard2.0\Swastika.Messenger.Lib.pdb
