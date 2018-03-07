@@ -9,14 +9,21 @@ using System.Threading.Tasks;
 using System.Linq;
 using Swastika.UI.Core.SignalR;
 
-namespace Messenger.Lib.SignalR.Hubs
+namespace Swastika.Messenger.Lib.SignalR.Hubs
 {
-    public class MessengerHub : BaseSignalRHub
+    public class ChatHub : BaseSignalRHub
     {
         //private static readonly List<MessengerUserDetailsViewModel> ConnectedUsers = new List<MessengerUserDetailsViewModel>();
         string defaultName = "Anonymous";
         string defaultAvatar = string.Empty;
         string receiveMethod = "receiveMessage";
+
+        public void Send(string name, string message)
+        {
+            // Call the broadcastMessage method to update clients.
+            Clients.All.SendAsync("broadcastMessage", name, message);
+        }
+
         public async Task HubConnect(MessengerRequestViewModel request)
         {
             string errorMsg = string.Empty;
@@ -40,20 +47,20 @@ namespace Messenger.Lib.SignalR.Hubs
             {
                 result.ResponseKey = action;
                 var user = result.Data;
-                Users.Add(new Swastika.Domain.Core.Models.SignalRClient()
-                {
-                    UserId = user.Id,
-                    NickName = user.Name,
-                    ConnectionId = user.ConnectionId,
-                    JoinedDate = DateTime.UtcNow
-                }
-                    );
-                await Clients.Client(Context.ConnectionId).InvokeAsync(receiveMethod, result);
+                //Users.Add(new Swastika.Domain.Core.Models.SignalRClient()
+                //{
+                //    UserId = user.Id,
+                //    NickName = user.Name,
+                //    ConnectionId = user.ConnectionId,
+                //    JoinedDate = DateTime.UtcNow
+                //}
+                //    );
+                await Clients.Client(Context.ConnectionId).SendAsync(receiveMethod, result);
                 await UpdateOnlineStatus(user.MyRooms, user.Id, true);
             }
             else
             {
-                await Clients.Client(Context.ConnectionId).InvokeAsync(receiveMethod, result);
+                await Clients.Client(Context.ConnectionId).SendAsync(receiveMethod, result);
             }
         }
 
@@ -64,11 +71,11 @@ namespace Messenger.Lib.SignalR.Hubs
             {
                 result.Status = 1;
                 result.ResponseKey = GetResponseKey(MessageReponseKey.SendMessage); //Enum.GetName(typeof(MessageReponseKey), MessageReponseKey.SendMessage);
-                await Clients.All.InvokeAsync(receiveMethod, result);
+                await Clients.All.SendAsync(receiveMethod, result);
             }
             else
             {
-                await Clients.Client(Context.ConnectionId).InvokeAsync(receiveMethod, result);
+                await Clients.Client(Context.ConnectionId).SendAsync(receiveMethod, result);
             }
         }
 
@@ -105,7 +112,7 @@ namespace Messenger.Lib.SignalR.Hubs
                     }
                 };
 
-                await Clients.Group(room.Name).InvokeAsync(receiveMethod, teamMessage);
+                await Clients.Group(room.Name).SendAsync(receiveMethod, teamMessage);
                 if (isOnline)
                 {
                     await Groups.AddAsync(Context.ConnectionId, room.Name);
@@ -144,7 +151,7 @@ namespace Messenger.Lib.SignalR.Hubs
 
         //    string action = Enum.GetName(typeof(TeamMessageReponseKey), TeamMessageReponseKey.GetTeam);
         //    ApiResult<TeamChatViewModel> result = await TeamChatViewModel.GetByUserIdAsync(request);
-        //    await Clients.Client(Context.ConnectionId).InvokeAsync("receiveMessage", result);
+        //    await Clients.Client(Context.ConnectionId).SendAsync("receiveMessage", result);
         //    UpdatePlayerConnectionIdAsync(request.UserId);
         //    //PaginationModel<TeamChatViewModel> currentMessages = new PaginationModel<TeamChatViewModel>();
         //    //try
@@ -203,7 +210,7 @@ namespace Messenger.Lib.SignalR.Hubs
         //    //            Data = null,
         //    //            Errors = new List<string>() { "You are not membered of this team" }
         //    //        };
-        //    //        Clients.Client(Context.ConnectionId).InvokeAsync("receiveMessage", result);
+        //    //        Clients.Client(Context.ConnectionId).SendAsync("receiveMessage", result);
         //    //    }
 
         //    //}
@@ -218,7 +225,7 @@ namespace Messenger.Lib.SignalR.Hubs
         //    //}
         //    //finally
         //    //{
-        //    //    Clients.Client(Context.ConnectionId).InvokeAsync("receiveMessage", result);
+        //    //    Clients.Client(Context.ConnectionId).SendAsync("receiveMessage", result);
         //    //    UpdatePlayerConnectionIdAsync(request.UserId);
         //    //}
         //}
@@ -259,7 +266,7 @@ namespace Messenger.Lib.SignalR.Hubs
         //                Data = null,
         //                Errors = new List<string>() { "You are not membered of this team" }
         //            };
-        //            await Clients.Client(Context.ConnectionId).InvokeAsync("receiveMessage", result);
+        //            await Clients.Client(Context.ConnectionId).SendAsync("receiveMessage", result);
         //        }
 
         //    }
@@ -275,7 +282,7 @@ namespace Messenger.Lib.SignalR.Hubs
         //    }
         //    finally
         //    {
-        //        await Clients.Client(Context.ConnectionId).InvokeAsync("receiveMessage", result);
+        //        await Clients.Client(Context.ConnectionId).SendAsync("receiveMessage", result);
         //        UpdatePlayerConnectionIdAsync(request.UserId);
         //    }
         //}
@@ -297,7 +304,7 @@ namespace Messenger.Lib.SignalR.Hubs
         //            ResponseKey = Enum.GetName(typeof(ApiResponseKey), ApiResponseKey.Succeed),
         //            Data = request
         //        };
-        //        //Clients.Client(Context.ConnectionId).InvokeAsync("receiveMessage", result);
+        //        //Clients.Client(Context.ConnectionId).SendAsync("receiveMessage", result);
         //    }
         //    UpdatePlayerConnectionIdAsync(request.UserId);
         //}
@@ -335,7 +342,7 @@ namespace Messenger.Lib.SignalR.Hubs
         //                        Errors = null
         //                    };
 
-        //                    await Clients.Client(Context.ConnectionId).InvokeAsync("receiveMessage", result);
+        //                    await Clients.Client(Context.ConnectionId).SendAsync("receiveMessage", result);
 
         //                    break;
         //                case MemberStatus.Invited:
@@ -353,7 +360,7 @@ namespace Messenger.Lib.SignalR.Hubs
         //                        Errors = null
         //                    };
 
-        //                    await Clients.Client(Context.ConnectionId).InvokeAsync("receiveMessage", inviteResult);
+        //                    await Clients.Client(Context.ConnectionId).SendAsync("receiveMessage", inviteResult);
 
         //                    break;
         //                case MemberStatus.AdminRejected:
@@ -423,7 +430,7 @@ namespace Messenger.Lib.SignalR.Hubs
         //    }
         //    finally
         //    {
-        //        await Clients.Client(Context.ConnectionId).InvokeAsync("receiveMessage", result);
+        //        await Clients.Client(Context.ConnectionId).SendAsync("receiveMessage", result);
         //        UpdatePlayerConnectionIdAsync(request.UserId);
         //    }
         //}
@@ -497,7 +504,7 @@ namespace Messenger.Lib.SignalR.Hubs
         //    }
         //    finally
         //    {
-        //        await Clients.Client(Context.ConnectionId).InvokeAsync("receiveMessage", result);
+        //        await Clients.Client(Context.ConnectionId).SendAsync("receiveMessage", result);
         //        UpdatePlayerConnectionIdAsync(request.UserId);
         //    }
         //}
@@ -546,7 +553,7 @@ namespace Messenger.Lib.SignalR.Hubs
         //                Data = false,
         //                Errors = new List<string>() { "You are not membered of this team" }
         //            };
-        //            await Clients.Client(Context.ConnectionId).InvokeAsync("receiveMessage", result);
+        //            await Clients.Client(Context.ConnectionId).SendAsync("receiveMessage", result);
         //        }
 
         //    }
@@ -562,7 +569,7 @@ namespace Messenger.Lib.SignalR.Hubs
         //    }
         //    finally
         //    {
-        //        await Clients.Client(Context.ConnectionId).InvokeAsync("receiveMessage", result);
+        //        await Clients.Client(Context.ConnectionId).SendAsync("receiveMessage", result);
         //        UpdatePlayerConnectionIdAsync(request.UserId);
         //    }
         //}
@@ -594,7 +601,7 @@ namespace Messenger.Lib.SignalR.Hubs
         //                    Data = saveResult.Data,
         //                    Errors = saveResult.Errors
         //                };
-        //                await Clients.Group(roomName).InvokeAsync("receiveMessage", result);
+        //                await Clients.Group(roomName).SendAsync("receiveMessage", result);
         //            }
         //            else
         //            {
@@ -605,7 +612,7 @@ namespace Messenger.Lib.SignalR.Hubs
         //                    Data = null,
         //                    Errors = new List<string>() { "You are not membered of this team" }
         //                };
-        //                await Clients.Client(Context.ConnectionId).InvokeAsync("receiveMessage", result);
+        //                await Clients.Client(Context.ConnectionId).SendAsync("receiveMessage", result);
         //            }
         //        }
         //    }
@@ -628,7 +635,7 @@ namespace Messenger.Lib.SignalR.Hubs
         //public async Task SaveTeam(TeamViewModel team)
         //{
         //    var saveResult = await team.SaveModelAsync(true);
-        //    await Clients.Client(Context.ConnectionId).InvokeAsync("receiveMessage", saveResult);
+        //    await Clients.Client(Context.ConnectionId).SendAsync("receiveMessage", saveResult);
         //}
 
 
