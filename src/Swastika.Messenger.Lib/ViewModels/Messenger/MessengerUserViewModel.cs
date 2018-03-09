@@ -194,7 +194,7 @@ namespace Swastika.Messenger.Lib.ViewModels.Messenger
                 {
                     var user = getUser.Data;
                     //Update ConnectionId if changed
-                    user.Avatar = request.UserAvatar ?? user.Avatar;
+                    user.Avatar = request.Avatar ?? user.Avatar;
                     user.ConnectionId = request.ConnectionId;
                     result = await user.SaveModelAsync(false, context, transaction);
 
@@ -203,9 +203,9 @@ namespace Swastika.Messenger.Lib.ViewModels.Messenger
                 {
                     var user = new MessengerUserDetailsViewModel()
                     {
-                        Id = request.UserId ?? Guid.NewGuid().ToString(),
+                        Id = !string.IsNullOrEmpty(request.UserId) ? request.UserId : Guid.NewGuid().ToString(),
                         Name = request.UserName,
-                        Avatar = request.UserAvatar,
+                        Avatar = request.Avatar,
                         ConnectionId = request.ConnectionId,
                         CreatedDate = DateTime.UtcNow,
                         MyRooms = new List<MessengerRoomViewModel>(),

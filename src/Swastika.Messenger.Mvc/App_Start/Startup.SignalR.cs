@@ -29,7 +29,7 @@ namespace Swastika.Messenger.Mvc
                 routes.MapHub<ChatHub>("/chat");
             });
 
-            app.UseCors("CorsPolicy");
+            //app.UseCors("CorsPolicy");
         }
 
     }

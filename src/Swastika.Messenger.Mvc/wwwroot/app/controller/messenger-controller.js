@@ -55,208 +55,112 @@ appMessenger.controller('MessengerController', function PhoneListController($sco
         data: $scope.request
     };
 
+    $scope.connection = null;
+
+    $scope.user = {
+        userId: '',
+        userName: '',
+        avatar: '',
+        connectionId: '',
+        message:'',
+        isOnline: false
+    };
     $scope.range = function (max) {
         var input = [];
         for (var i = 1; i <= max; i += 1) input.push(i);
         return input;
     };
 
-    $scope.loadMedia = function (pageIndex) {
-        if (pageIndex != undefined) {
-            $scope.request.pageIndex = pageIndex;
-        }
-        var url = '/api/' + $scope.currentLanguage + '/media/list';//byProduct/' + productId;
-        $scope.settings.url = url;// + '/true';
-        $scope.settings.data = $scope.request;
-        $.ajax($scope.settings).done(function (response) {
-            $scope.$apply($scope.mediaData = response.data);
-
-            $.each($scope.mediaData.items, function (i, media) {
-                $.each($scope.activedMedias, function (i, e) {
-                    if (e.mediaId == media.id) {
-                        media.isHidden = true;
-                    }
-                })
-            })
-        });
+    $scope.connect = function () {
+        $scope.connection.invoke('hubConnect', $scope.user);
     };
-    $scope.uploadMedia = function () {
-        //var container = $(this).parents('.model-media').first().find('.custom-file').first();
-        if ($scope.mediaFile.file !== undefined && $scope.mediaFile.file !== null) {
-            // Create FormData object
-            var files = new FormData();
 
-            // Looping over all files and add it to FormData object
-            files.append($scope.mediaFile.file.name, $scope.mediaFile.file);
+    // Starts a connection with transport fallback - if the connection cannot be started using
+    // the webSockets transport the function will fallback to the serverSentEvents transport and
+    // if this does not work it will try longPolling. If the connection cannot be started using
+    // any of the available transports the function will return a rejected Promise.
+    $scope.startConnection = function (url) {
+        return function start(transport) {
+            console.log(`Starting connection using ${signalR.TransportType[transport]} transport`)
+            $scope.connection = new signalR.HubConnection(url, { transport: transport });
 
-            // Adding one more key to FormData object
-            files.append('fileFolder', $scope.mediaFile.folder);
-            files.append('title', $scope.mediaFile.title);
-            files.append('description', $scope.mediaFile.description);
-            $.ajax({
-                url: '/api/' + $scope.currentLanguage + '/media/upload', //'/api/tts/UploadImage',
-                type: "POST",
-                contentType: false, // Not to set any content header
-                processData: false, // Not to process data
-                data: files,
-                success: function (result) {
-                    if (result.isSucceed) {
-                        $scope.mediaFile.file = null;
-                        $scope.loadMedia();
-                        $('.upload-image-modal-lg').modal('hide');
-                        return result;
-                    }
-                },
-                error: function (err) {
-                    return '';
-                }
+            // Create a function that the hub can call to broadcast messages.
+            $scope.connection.on('broadcastMessage', function (name, message) {
+                // Html encode display name and message.
+                $scope.user.userName = name;
+                var encodedMsg = message;
+                // Add the message to the page.
+                var liElement = document.createElement('li');
+                liElement.innerHTML = '<strong>' + $scope.user.userName + '</strong>:&nbsp;&nbsp;' + encodedMsg;
+                document.getElementById('discussion').appendChild(liElement);
             });
-        }
-    };
-
-    $scope.removeMedia = function (mediaId) {
-        if (confirm("Are you sure!")) {
-            var url = '/api/' + $scope.currentLanguage + '/media/delete/' + mediaId;
-            $.ajax({
-                method: 'GET',
-                url: url,
-                success: function (data) {
-                    $scope.loadMedia();
-                },
-                error: function (a, b, c) {
-                    console.log(a + " " + b + " " + c);
-                }
-            });
-        }
-    };
-    $scope.saveMedia = function (media) {
-        var url = '/api/' + $scope.currentLanguage + '/media/save';
-        $.ajax({
-            method: 'POST',
-            url: url,
-            data: media,
-            success: function (data) {
-                //$scope.loadMedia();
+            $scope.connection.on('receiveMessage', function (data) {
+                console.log(data);
                 if (data.isSucceed) {
-                    alert('success');
+                    switch (data.responseKey) {
+                        case 'Connect':
+                            $scope.user.isOnline = true;
+                            $scope.$apply();
+                            return false;
+                        default:
+                    }
+
                 }
-                else {
-                    alert('failed! ' + data.errors);
-                }
-            },
-            error: function (a, b, c) {
-                console.log(a + " " + b + " " + c);
-            }
-        });
-    };
-
-    $scope.loadProduct = function (pageIndex = 0, pageSize = 16, orderBy = 'title', direction = 0) {
-        var request = {
-            "pageSize": pageSize,
-            "pageIndex": pageIndex,
-            "orderBy": orderBy,
-            "direction": direction,
-            "keyword": $('#keyword').val()
-        }
-        var url = '/api/' + $scope.currentLanguage + '/product/list';//byProduct/' + productId;
-        $scope.settings.url = url;// + '/true';
-        $scope.settings.data = request;
-        $.ajax($scope.settings).done(function (response) {
-            $scope.productData = response.data;
-        });
-    };
-
-    $scope.changeMedia = function (media) {
-        var currentItem = null;
-        if ($scope.activedMedias == undefined) {
-            $scope.activedMedias = [];
-        }
-        $.each($scope.activedMedias, function (i, e) {
-            if (e.mediaId == media.id) {
-                e.isActived = media.isActived;
-                currentItem = e;
-                return false;
-            }
-        });
-        if (currentItem == null) {
-            currentItem = {
-                description: media.description,
-                image: media.fullPath,
-                mediaId: media.id,
-                product: $('#product-id').val(),
-                specificulture: media.specificulture,
-                position: 0,
-                priority: $scope.activedMedias.length + 1,
-                isActived: true
-            };
-            media.isHidden = true;
-            $scope.activedMedias.push(currentItem);
-        }
-    }
-
-    $scope.changeProduct = function (product) {
-        var currentItem = null;
-        $.each($scope.activedProducts, function (i, e) {
-            if (e.relatedProductId == product.id) {
-                e.isActived = product.isActived;
-                currentItem = e;
-                return false;
-            }
-        });
-        if (currentItem == null) {
-            currentItem = {
-                relatedProductId: product.id,
-                sourceProductId: $('#product-id').val(),
-                specificulture: product.specificulture,
-                priority: $scope.activedMedias.length + 1,
-                product: product,
-                isActived: true
-            };
-            product.isHidden = true;
-            $scope.activedProducts.push(currentItem);
-        }
-    }
-    $scope.addProperty = function (type) {
-        var i = $(".property").length;
-        $.ajax({
-            method: 'GET',
-            url: '/' + $scope.currentLanguage + '/Portal/' + type + '/AddEmptyProperty/' + i,
-            success: function (data) {
-                $('#tbl-properties > tbody').append(data);
-                $(data).find('.prop-data-type').trigger('change');
-            },
-            error: function (a, b, c) {
-                console.log(a + " " + b + " " + c);
-            }
-        });
-    }
-
-
-    $scope.updateEditors = function () {
-        setTimeout(function () {
-            $.each($('.code-editor'), function (i, e) {
-                var container = $(this);
-                var editor = ace.edit(e);
-                var val = $(this).next('input').val();
-                editor.setValue(val);
-                if (container.hasClass('json')) {
-                    editor.session.setMode("ace/mode/json");
-                }
-                else {
-                    editor.session.setMode("ace/mode/razor");
-                }
-                editor.setTheme("ace/theme/chrome");
-                //editor.setReadOnly(true);
-
-                editor.session.setUseWrapMode(true);
-                editor.setOptions({
-                    maxLines: Infinity
-                });
-                editor.getSession().on('change', function (e) {
-                    // e.type, etc
-                    $(container).parent().find('.code-content').val(editor.getValue());
-                });
             });
-        }, 200);
+
+            return $scope.connection.start()
+                .then(function () {                    
+                    console.log('connection started');
+                    
+                    $scope.user.connectionId = $scope.connection.connection.connectionId;
+                    document.getElementById('sendmessage').addEventListener('click', function (event) {
+                        // Call the Send method on the hub.
+                        $scope.connection.invoke('send', $scope.user.userName, $scope.user.message);
+                        // Clear text box and reset focus for next comment.
+                        $scope.user.message = '';
+                        event.preventDefault();
+                    });
+                    //$scope.$apply();
+                })
+                .catch(function (error) {
+                    console.log(`Cannot start the connection use ${signalR.TransportType[transport]} transport. ${error.message}`);
+                    if (transport !== signalR.TransportType.LongPolling) {
+                        return start(transport + 1);
+                    }
+                    return Promise.reject(error);
+                });
+        }(signalR.TransportType.LongPolling);
+
+        //return function start(transport) {
+        //    console.log(`Starting connection using ${signalR.TransportType[transport]} transport`)
+        //    $scope.connection = new signalR.HubConnection(url, { transport: transport });
+        //    if (configureConnection && typeof configureConnection === 'function') {
+        //        configureConnection();
+        //    }
+        //    return $scope.connection.start()
+        //        .then(function () {
+        //            console.log('connection started');
+        //            $scope.user.isOnline = true;
+        //            $scope.connection.invoke('hubConnect', $scope.user);
+
+        //            document.getElementById('sendmessage').addEventListener('click', function (event) {
+        //                // Call the Send method on the hub.
+        //                $scope.connection.invoke('send', name, messageInput.value);
+        //                // Clear text box and reset focus for next comment.
+        //                messageInput.value = '';
+        //                messageInput.focus();
+        //                event.preventDefault();
+        //            });
+        //        })
+        //        .catch(function (error) {
+        //            console.log(`Cannot start the connection use ${signalR.TransportType[transport]} transport. ${error.message}`);
+        //            if (transport !== signalR.TransportType.LongPolling) {
+        //                return start(transport + 1);
+        //            }
+        //            return Promise.reject(error);
+        //        });
+        //}(signalR.TransportType.LongPolling);
     };
+
+
 });

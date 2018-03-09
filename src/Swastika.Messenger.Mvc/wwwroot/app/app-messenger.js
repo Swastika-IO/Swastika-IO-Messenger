@@ -1,5 +1,5 @@
 ﻿'use strict';
-var appMessenger = angular.module('SwastikaMessenger', []);
+var appMessenger = angular.module('Messenger', []);
 var serviceBase = "/";
 appMessenger.directive('ngEnter', function () {
     return function (scope, element, attrs) {

@@ -39,6 +39,8 @@ namespace Swastika.Messenger.Mvc
             });
 
             ConfigureSignalRServices(services);
+
+
             services.AddMvc();
         }
 
@@ -54,12 +56,18 @@ namespace Swastika.Messenger.Mvc
             {
                 app.UseExceptionHandler("/Messenger/Error");
             }
-           
+
 
             app.UseStaticFiles();
 
             ConfigurationSignalR(app);
-
+            app.UseCors(
+                builder => builder
+                    .AllowAnyOrigin()
+                    .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+                    .AllowAnyHeader()
+                    //.AllowCredentials()
+                    );
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

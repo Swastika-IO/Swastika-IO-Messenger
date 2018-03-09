@@ -3,13 +3,19 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Swastika.Messenger.Mvc.Models;
 
 namespace Swastika.Messenger.Mvc.Controllers
 {
-    public class MessengerController : Controller
+
+    public class MessengerController : BaseController<MessengerController>
     {
+        public MessengerController(IHostingEnvironment env) : base(env)
+        {
+        }
+
         public IActionResult Index()
         {
             return View();

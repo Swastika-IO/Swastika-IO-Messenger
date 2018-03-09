@@ -21,7 +21,8 @@ namespace Swastika.Messenger.Lib.SignalR.Hubs
         public void Send(string name, string message)
         {
             // Call the broadcastMessage method to update clients.
-            Clients.All.SendAsync("broadcastMessage", name, message);
+
+            Clients.All.SendAsync("broadcastMessage", !string.IsNullOrEmpty(name) ? $"{name}" : $"{defaultName}", message);
         }
 
         public async Task HubConnect(MessengerRequestViewModel request)
@@ -86,7 +87,7 @@ namespace Swastika.Messenger.Lib.SignalR.Hubs
             var user = new MessengerUserDetailsViewModel()
             {
                 Name = request.UserName ?? defaultName,
-                Avatar = request.UserAvatar ?? defaultAvatar,
+                Avatar = request.Avatar ?? defaultAvatar,
                 ConnectionId = Context.ConnectionId,
                 CreatedDate = DateTime.UtcNow,
                 MyRooms = new List<MessengerRoomViewModel>(),

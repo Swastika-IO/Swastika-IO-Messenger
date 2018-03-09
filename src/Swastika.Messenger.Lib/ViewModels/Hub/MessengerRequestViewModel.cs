@@ -21,8 +21,8 @@ namespace Swastika.Messenger.Lib.ViewModels.Hub
         public MemberStatus MemberStatus { get; set; }
         [JsonProperty("isOnline")]
         public bool IsOnline { get; set; }
-        [JsonProperty("userAlvatar")]
-        public string UserAvatar { get; set; }
+        [JsonProperty("avatar")]
+        public string Avatar { get; set; }
         [JsonProperty("connectionId")]
         public string ConnectionId { get; set; }
         [JsonProperty("keyword")]
