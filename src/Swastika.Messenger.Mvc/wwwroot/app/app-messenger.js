@@ -1,5 +1,5 @@
 ﻿'use strict';
-var appMessenger = angular.module('Messenger', []);
+var appMessenger = angular.module('Messenger', ['ngGentle']);
 var serviceBase = "/";
 appMessenger.directive('ngEnter', function () {
     return function (scope, element, attrs) {

@@ -60,6 +60,7 @@ appMessenger.controller('MessengerController', function PhoneListController($sco
     $scope.user = {
         userId: '',
         userName: '',
+        userAvatar: '',
         avatar: '',
         connectionId: '',
         message:'',
@@ -87,11 +88,11 @@ appMessenger.controller('MessengerController', function PhoneListController($sco
             // Create a function that the hub can call to broadcast messages.
             $scope.connection.on('broadcastMessage', function (name, message) {
                 // Html encode display name and message.
-                $scope.user.userName = name;
+                //$scope.user.userName = name;
                 var encodedMsg = message;
                 // Add the message to the page.
                 var liElement = document.createElement('li');
-                liElement.innerHTML = '<strong>' + $scope.user.userName + '</strong>:&nbsp;&nbsp;' + encodedMsg;
+                liElement.innerHTML = '<strong>' + name + '</strong>:&nbsp;&nbsp;<Gentle>' + encodedMsg + '</Gentle>';
                 document.getElementById('discussion').appendChild(liElement);
             });
             $scope.connection.on('receiveMessage', function (data) {
@@ -107,19 +108,18 @@ appMessenger.controller('MessengerController', function PhoneListController($sco
 
                 }
             });
-
+            $scope.sendMessage = function () {
+                // Call the Send method on the hub.
+                $scope.connection.invoke('send', $scope.user.userName, $scope.user.message);
+                // Clear text box and reset focus for next comment.
+                $scope.user.message = '';
+            };
             return $scope.connection.start()
                 .then(function () {                    
                     console.log('connection started');
                     
                     $scope.user.connectionId = $scope.connection.connection.connectionId;
-                    document.getElementById('sendmessage').addEventListener('click', function (event) {
-                        // Call the Send method on the hub.
-                        $scope.connection.invoke('send', $scope.user.userName, $scope.user.message);
-                        // Clear text box and reset focus for next comment.
-                        $scope.user.message = '';
-                        event.preventDefault();
-                    });
+                    
                     //$scope.$apply();
                 })
                 .catch(function (error) {
@@ -129,7 +129,7 @@ appMessenger.controller('MessengerController', function PhoneListController($sco
                     }
                     return Promise.reject(error);
                 });
-        }(signalR.TransportType.LongPolling);
+        }(signalR.TransportType.WebSocket);
 
         //return function start(transport) {
         //    console.log(`Starting connection using ${signalR.TransportType[transport]} transport`)

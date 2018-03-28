@@ -8,13 +8,13 @@
             <label class="col-md-3">
                 username
             </label>
-            <input ng-model="user.userName" class="form-control col-md-9" type="text" />
+            <input ng-model="user.userName" ng-enter="connect()" class="form-control col-md-9" type="text" />
         </div>
         <div class="form-group">
             <label class="col-md-3">
                 avatar
             </label>
-            <input ng-model="user.userAvatar" class="form-control col-md-9" type="text" />
+            <input ng-model="user.userAvatar" ng-enter="connect()" class="form-control col-md-9" type="text" />
         </div>
         <div class="form-group">
             <a class="btn btn-sm btn-success form-control" ng-click="connect()">connect</a>
@@ -22,16 +22,17 @@
     </div>
     <div class="row" ng-show="user.isOnline">
         <div>
-            Hello {{user.userName}} <img ng-show="user.avatar !=''" src="{{user.avatar}}"/>
+            Hello {{user.userName}} <img ng-show="user.userAvatar !=''" src="{{user.userAvatar}}"/>
         </div>
-        <input type="text" ng-model="user.message" />
-        <input type="button" id="sendmessage" value="Send" />
+        <input type="text" ng-model="user.message" ng-enter="sendMessage()" />
+        <input type="button" ng-click="sendMessage()" value="Send" />
         <input type="hidden" id="displayname" />
         <ul id="discussion"></ul>
     </div>
 
 </div>
 @section scripts{
+<script src="~/app/nggentle-master/ngGentle.js"></script>
     <script src="/js/plugins/signalR/signalr-clientES5.js"></script>
     <script src="/js/plugins/signalR/signalr-msgpackprotocolES5.js"></script>
 
